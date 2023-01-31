@@ -1,9 +1,9 @@
 pipeline {
     agent any
     environment {
-        EC2INSTANCEDEVDEV = 'ec2-user@44.201.56.64'
-        EC2INSTANCEDEVTEST = 'ec2-user@44.203.20.13'
-        EC2INSTANCEDEVPROD = 'ec2-user@34.201.35.162'
+        EC2INSTANCEDEV = 'ec2-user@44.201.56.64'
+        EC2INSTANCETEST = 'ec2-user@44.203.20.13'
+        EC2INSTANCEPROD = 'ec2-user@34.201.35.162'
         APPNAME = 'grupo2'
         REGISTRY = 'luisman10'
         DOCKER_HUB_LOGIN = credentials('docker-grupo2')
