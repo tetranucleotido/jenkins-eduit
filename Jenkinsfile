@@ -11,13 +11,28 @@ pipeline {
 
     stages {
         stage('Init') {
+            agent{
+            docker {
+                image 'node:erbium-alpine'
+                args '-u root:root'
+                }
+            }
             steps {
                 echo 'Stage Init'
+                sh 'npm install'
             }
         }
         stage('Test') {
+            agent{
+                docker {
+                    image 'node:erbium-alpine'
+                    args '-u root:root'
+                }
+            }
             steps {
-                echo 'Stage Init'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                sh 'npm run test'
+                }
             }
         }
 
@@ -38,9 +53,12 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy-dev') {
+            when {
+                branch 'dev'
+            }
             steps {
-                echo 'Stage Deploy'
+                echo 'Stage Deploy-dev'
                 sh ("sed -i -- 's/REGISTRY/$REGISTRY/g' docker-compose.yml")
                 sh ("sed -i -- 's/APPNAME/$APPNAME/g' docker-compose.yml")
                 sh ("sed -i -- 's/TAG/$BUILD_NUMBER/g' docker-compose.yml")
@@ -48,6 +66,38 @@ pipeline {
                  sh 'scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2INSTANCEDEV}:/home/ec2-user' 
                  sh 'ssh ${EC2INSTANCEDEV} ls -lrt'
                  sh 'ssh ${EC2INSTANCEDEV} docker-compose up -d'
+                }
+            }
+        }
+        stage('Deploy-testing') {
+            when {
+                branch 'testing'
+            }
+            steps {
+                echo 'Stage Deploy-testing'
+                sh ("sed -i -- 's/REGISTRY/$REGISTRY/g' docker-compose.yml")
+                sh ("sed -i -- 's/APPNAME/$APPNAME/g' docker-compose.yml")
+                sh ("sed -i -- 's/TAG/$BUILD_NUMBER/g' docker-compose.yml")
+                sshagent(['ssh-ec2']){
+                 sh 'scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2INSTANCETEST}:/home/ec2-user' 
+                 sh 'ssh ${EC2INSTANCETEST} ls -lrt'
+                 sh 'ssh ${EC2INSTANCETEST} docker-compose up -d'
+                }
+            }
+        }
+        stage('Deploy-prod') {
+            when {
+                branch 'main'
+            }   
+            steps {
+                echo 'Stage Deploy prod'
+                sh ("sed -i -- 's/REGISTRY/$REGISTRY/g' docker-compose.yml")
+                sh ("sed -i -- 's/APPNAME/$APPNAME/g' docker-compose.yml")
+                sh ("sed -i -- 's/TAG/$BUILD_NUMBER/g' docker-compose.yml")
+                sshagent(['ssh-ec2']){
+                 sh 'scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2INSTANCEPROD}:/home/ec2-user' 
+                 sh 'ssh ${EC2INSTANCEPROD} ls -lrt'
+                 sh 'ssh ${EC2INSTANCEPROD} docker-compose up -d'
                 }
             }
         }
