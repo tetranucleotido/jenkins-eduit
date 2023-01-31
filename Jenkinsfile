@@ -58,7 +58,7 @@ pipeline {
                 branch 'dev'
             }
             steps {
-                echo 'Stage Deploy-dev!'
+                echo 'Stage Deploy-dev!!'
                 sh ("sed -i -- 's/REGISTRY/$REGISTRY/g' docker-compose.yml")
                 sh ("sed -i -- 's/APPNAME/$APPNAME/g' docker-compose.yml")
                 sh ("sed -i -- 's/TAG/$BUILD_NUMBER/g' docker-compose.yml")
