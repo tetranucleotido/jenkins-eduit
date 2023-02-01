@@ -55,7 +55,7 @@ pipeline {
 
         stage('Deploy-dev') {
             when {
-                branch 'dev'
+                branch 'origin/dev'
             }
             steps {
                 echo 'Stage Deploy-dev!!'
