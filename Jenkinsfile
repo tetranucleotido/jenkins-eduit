@@ -55,7 +55,7 @@ pipeline {
 
         stage('Deploy-dev') {
             when {
-                branch 'origin/dev'
+                branch 'refs/remotes/origin/dev'
             }
             steps {
                 echo 'Stage Deploy-dev!!'
